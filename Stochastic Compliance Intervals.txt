@@ -1,0 +1,19 @@
+Market:
+  Mean CR:   0.22 ± 0.08
+  95% CI:    [0.08, 0.38]
+  P(success|heuristic): 20% → 20% → 20% (stable, always low)
+  
+Equity:
+  Mean CR:   0.67 ± 0.12
+  95% CI:    [0.42, 0.87]
+  P(CR > 0.70): 58% → success probability = 85%
+  
+Capacity:
+  Mean CR:   0.44 ± 0.11
+  95% CI:    [0.23, 0.65]
+  P(success|heuristic): 50% (wide band uncertainty)
+  
+Hybrid:
+  Mean CR:   0.78 ± 0.09
+  95% CI:    [0.60, 0.92]
+  P(CR > 0.70): 89% → success probability = 85%

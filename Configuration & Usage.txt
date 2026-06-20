@@ -1,0 +1,24 @@
+Configuration & Usage
+1. Run Deterministic (Base Case)
+bash
+
+Copy code
+gams igems_complete.gms
+
+2. Enable Stochastic Module (generates 100 MC samples)
+bash
+
+Copy code
+gams igems_complete.gms --STOCH=1
+
+3. Enable Hybrid-Weight Optimization (requires CPLEX/Gurobi)
+bash
+
+Copy code
+gams igems_complete.gms --OPTIM=1
+
+4. Run All Modules
+bash
+
+Copy code
+gams igems_complete.gms --STOCH=1 --OPTIM=1

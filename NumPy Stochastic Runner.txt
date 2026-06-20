@@ -1,0 +1,57 @@
+import numpy as np
+import pandas as pd
+import igems_model as ig
+
+# Scenario ensemble
+N_SCENARIOS = 1000
+REGIONS = 9
+
+# 1. Emissions uncertainty (log-normal, ±20% std dev at 2024)
+E_2024_mean = baseline['current_emissions_GtCO2'].values  # [6.5, 3.6, 11, ...]
+E_2024_sigma = 0.15 * E_2024_mean  # coefficient of variation = 15%
+E0_scenarios = np.random.lognormal(
+    np.log(E_2024_mean), E_2024_sigma/E_2024_mean, 
+    size=(N_SCENARIOS, REGIONS)
+)
+
+# 2. Decarbonization rate uncertainty (beta bounded [0.010, 0.040], mean 0.025)
+alpha_beta, beta_beta = 9, 9  # parametrization for Beta(0,1) scaled to [0.01, 0.04]
+drate_scenarios = np.random.beta(alpha_beta, beta_beta, size=N_SCENARIOS) \
+                  * 0.030 + 0.010
+
+# 3. Idiosyncratic annual shocks (Gamma, mean=1, std=0.3 ~ right-skewed)
+shocks = np.random.gamma(shape=11, scale=0.027, size=(N_SCENARIOS, REGIONS, 51))
+
+# 4. Run ensemble
+results = []
+for s in range(N_SCENARIOS):
+    emis_path = E0_scenarios[s, :, np.newaxis] \
+                * (1 - drate_scenarios[s])**(np.arange(51))  # shape (9, 51)
+    emis_path *= shocks[s, :, :]
+    
+    # Compliance: compare against static allocations
+    compliant = (emis_path <= alloc.values[:, np.newaxis])  # shape (9, 51)
+    CRy_scenario = compliant.sum(axis=0) / REGIONS  # shape (51,)
+    CR_scenario = CRy_scenario.mean()
+    
+    for m in mechanisms:
+        results.append({
+            'scenario': s,
+            'mechanism': m,
+            'CR': CR_scenario[m],
+            'E2024': E0_scenarios[s].sum(),
+            'drate': drate_scenarios[s],
+        })
+
+df_results = pd.DataFrame(results)
+
+# 5. Aggregate statistics
+for m in mechanisms:
+    cr_dist = df_results[df_results['mechanism']==m]['CR'].values
+    print(f"{m}:")
+    print(f"  Mean CR:   {cr_dist.mean():.3f}")
+    print(f"  Std Dev:   {cr_dist.std():.3f}")
+    print(f"  95% CI:    [{np.percentile(cr_dist, 2.5):.3f}, "
+          f"{np.percentile(cr_dist, 97.5):.3f}]")
+    print(f"  P(CR > 0.40): {(cr_dist > 0.40).mean():.1%}")
+    print(f"  P(CR > 0.70): {(cr_dist > 0.70).mean():.1%}")

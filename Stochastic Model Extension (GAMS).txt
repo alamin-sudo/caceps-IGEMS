@@ -1,0 +1,36 @@
+* ==============================================================
+* 7. STOCHASTIC MODULE (NEW)
+* ==============================================================
+
+Set s 'Monte Carlo scenarios' / s1*s1000 / ;
+Set param_type / emissions, decarbonization, allocation_error / ;
+
+Parameters
+   E0_scenario(s,i)     'regional 2024 emissions draw (Gt)'
+   drate_scenario(s)    'decarbonization rate draw per scenario'
+   shock(s,i,t)        'idiosyncratic regional shock (multiplicative)'
+   emis_stoch(s,i,t)   'stochastic regional emissions path'
+   glob_stoch(s,t)     'stochastic global emissions path'
+   comp_stoch(s,m,i,t) 'stochastic compliance indicator'
+   CR_stoch(s,m)       'compliance rate per scenario'
+   p15_stoch(s,m)      'success probability per scenario'
+   CR_mean(m)          'across-scenario mean CR'
+   CR_std(m)           'across-scenario standard deviation'
+   CR_ci95_lo(m)       'lower 2.5% confidence bound'
+   CR_ci95_hi(m)       'upper 97.5% confidence bound' ;
+
+* Scenario generation (external: use Python/R, then import)
+* Each E0_scenario(s,i) is a draw from N(d(i,'emis'), σ_i)
+* Each drate_scenario(s) is a draw from N(0.025, 0.005)
+* Regional shocks: shock(s,i,t) ~ Gamma(shape=1.5, scale=1) [right-skewed]
+
+emis_stoch(s,i,t) = E0_scenario(s,i) * (1-drate_scenario(s))**(ord(t)-1) 
+                    * shock(s,i,t);
+
+comp_stoch(s,m,i,t)$(emis_stoch(s,i,t) <= alloc(m,i)) = 1;
+CR_stoch(s,m) = sum(t, sum(i, comp_stoch(s,m,i,t))/card(i)) / card(t);
+
+* Distribution statistics
+CR_mean(m)     = sum(s, CR_stoch(s,m)) / card(s);
+CR_std(m)      = sqrt(sum(s, (CR_stoch(s,m) - CR_mean(m))**2) / card(s));
+* (Percentiles require exogenous sorting post-solve)
