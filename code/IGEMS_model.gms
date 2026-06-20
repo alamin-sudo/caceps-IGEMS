@@ -5,11 +5,6 @@ $onText
  IGEMS - Integrated Global Emissions Management System (COMPLETE VERSION)
  Deterministic + Stochastic + Sensitivity
 
- CORRECTIONS APPLIED:
-   - Compliance: Definition B (workbook formula)
-   - Results: market 0.22 | equity 0.67 | capacity 0.44 | hybrid 0.78 ?
-   - Rankings: market < capacity < equity < hybrid ?
-
 ================================================================================
 $offText
 
