@@ -6,7 +6,7 @@
 
 "Treating Nature as Capital Is Not Enough: A Computational Framework for Equitable Global Carbon Budget Allocation"
 
-**Authors:** Abul Quasem Al-Amin & Naomi Oreskes
+**Authors:** [TBC]
 
 **Submitted to:** Nature Sustainability (2026)
 
